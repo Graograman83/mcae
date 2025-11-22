@@ -6,21 +6,21 @@ public with sharing class ExchangeRateController {
     };
 
     @AuraEnabled(cacheable=false)
-    public static void getExchangeRates(String base, List<String> symbols) {
+    public static RatesResponse getExchangeRates(String base, List<String> symbols) {
         Map<String, String> urlParams = new Map<String, String>(baseUrlParams);
         urlParams.put('base', base);
         urlParams.put('symbols', String.join(symbols, ','));
 
         String responsebody = requestAndGetResponseBody('latest', urlParams);
+        return (RatesResponse) JSON.deserialize(responsebody, RatesResponse.class);
     }
 
     @AuraEnabled(cacheable=true)
-    public static Map<String, String> getSymbols(String base) {
+    public static SymbolsResponse getSymbols() {
         Map<String, String> urlParams = new Map<String, String>(baseUrlParams);
 
         String responsebody = requestAndGetResponseBody('symbols', urlParams);
-
-        return new Map<String, String>();
+        return (SymbolsResponse) JSON.deserialize(responsebody, SymbolsResponse.class);
     }  
 
     private static String requestAndGetResponseBody(String resource, Map<String, String> urlParams) {
@@ -43,10 +43,17 @@ public with sharing class ExchangeRateController {
         return queryString;
     }    
 
-    public class Output  {
+    public class RatesResponse  {
+        public Boolean success;
         @AuraEnabled
-        public String timestamp;
+        public Integer timestamp;
         @AuraEnabled
         public Map<String, Decimal> rates;
+    }
+
+    public class SymbolsResponse  {
+        public Boolean success;
+        @AuraEnabled
+        public Map<String, String> symbols;
     }
 }
