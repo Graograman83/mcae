@@ -10,17 +10,37 @@ public with sharing class ExchangeRateController {
         Map<String, String> urlParams = new Map<String, String>(baseUrlParams);
         urlParams.put('base', base);
         urlParams.put('symbols', String.join(symbols, ','));
+        AuraHandledException exc = new AuraHandledException('Can\'t retrieve exchange rates.');
 
-        String responsebody = requestAndGetResponseBody('latest', urlParams);
-        return (RatesResponse) JSON.deserialize(responsebody, RatesResponse.class);
+        try {
+            String responsebody = requestAndGetResponseBody('latest', urlParams);
+            RatesResponse response = (RatesResponse) JSON.deserialize(responsebody, RatesResponse.class);
+            if (response.success) {
+                return response;
+            } else {
+                throw exc;
+            }
+        } catch (Exception e) {
+            throw exc;
+        }
     }
 
     @AuraEnabled(cacheable=true)
     public static SymbolsResponse getSymbols() {
         Map<String, String> urlParams = new Map<String, String>(baseUrlParams);
+        AuraHandledException exc = new AuraHandledException('Can\'t retrieve symbols.');
 
-        String responsebody = requestAndGetResponseBody('symbols', urlParams);
-        return (SymbolsResponse) JSON.deserialize(responsebody, SymbolsResponse.class);
+        try {
+            String responsebody = requestAndGetResponseBody('symbols', urlParams);
+            SymbolsResponse response = (SymbolsResponse) JSON.deserialize(responsebody, SymbolsResponse.class);
+            if (response.success) {
+                return response;
+            } else {
+                throw exc;
+            }
+        } catch (Exception e) {
+            throw exc;
+        }
     }  
 
     private static String requestAndGetResponseBody(String resource, Map<String, String> urlParams) {
