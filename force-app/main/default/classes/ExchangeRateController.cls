@@ -6,7 +6,27 @@ public with sharing class ExchangeRateController {
     };
 
     @AuraEnabled(cacheable=true)
-    public static RatesResponse getExchangeRates(String base) {
+    public static RatesResponse getHistoricalExchangeRates(String base, Date historicalDate) {
+        Map<String, String> urlParams = new Map<String, String>(baseUrlParams);
+        urlParams.put('base', base);
+        urlParams.put('date', ((Datetime) historicalDate).format('yyyy-MM-dd'));
+        AuraHandledException exc = new AuraHandledException('Can\'t retrieve exchange rates.');
+
+        try {
+            String responsebody = requestAndGetResponseBody('latest', urlParams);
+            RatesResponse response = (RatesResponse) JSON.deserialize(responsebody, RatesResponse.class);
+            if (response.success) {
+                return response;
+            } else {
+                throw exc;
+            }
+        } catch (Exception e) {
+            throw exc;
+        }
+    }
+
+    @AuraEnabled(cacheable=true)
+    public static RatesResponse getLatestExchangeRates(String base) {
         Map<String, String> urlParams = new Map<String, String>(baseUrlParams);
         urlParams.put('base', base);
         AuraHandledException exc = new AuraHandledException('Can\'t retrieve exchange rates.');

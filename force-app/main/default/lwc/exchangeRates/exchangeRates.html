@@ -1,14 +1,6 @@
 <template>
     <span>Timestamp: {timestamp}</span>
     
-    <lightning-radio-group
-        label="Mode"
-        options={modeOptions}
-        value={mode}
-        onchange={handleModeChange}
-        type="button"
-        required
-    ></lightning-radio-group>
     <lightning-combobox
             label="Select base currency"
             options={currencyOptions}
@@ -24,9 +16,28 @@
         onchange={handleQuoteChange}
         value={quotes}
     ></lightning-dual-listbox>
-    <lightning-datatable
-        key-field="symbol"
-        data={rates}
-        columns={columns}
-    ></lightning-datatable>
+    <lightning-radio-group
+        label="Mode"
+        options={modeOptions}
+        value={mode}
+        onchange={handleModeChange}
+        type="button"
+        required
+    ></lightning-radio-group>
+    <lightning-input lwc:if={isHistoricalMode}
+        label="Enter Date"
+        max = {maxDate}
+        min = {minDate}
+        value={historicalDate}
+        onchange={handleHistoricalDateChange}
+        type="date"
+    ></lightning-input>
+    <template lwc:if={isTimeseriesMode}></template>
+    <template lwc:else>
+        <lightning-datatable
+            key-field="symbol"
+            data={rates}
+            columns={columns}
+        ></lightning-datatable>
+    </template>
 </template>
