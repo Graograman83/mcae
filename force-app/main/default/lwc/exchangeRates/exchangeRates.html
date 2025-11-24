@@ -1,0 +1,32 @@
+<template>
+    <span>Timestamp: {timestamp}</span>
+    
+    <lightning-radio-group
+        label="Mode"
+        options={modeOptions}
+        value={mode}
+        onchange={handleModeChange}
+        type="button"
+        required
+    ></lightning-radio-group>
+    <lightning-combobox
+            label="Select base currency"
+            options={currencyOptions}
+            value={base}
+            onchange={handleBaseChange}
+            required
+    ></lightning-combobox>
+    <lightning-dual-listbox
+        label="Select quote currencies"
+        source-label="Available"
+        selected-label="Selected"
+        options={currencyOptions}
+        onchange={handleQuoteChange}
+        value={quotes}
+    ></lightning-dual-listbox>
+    <lightning-datatable
+        key-field="symbol"
+        data={rates}
+        columns={columns}
+    ></lightning-datatable>
+</template>

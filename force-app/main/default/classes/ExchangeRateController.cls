@@ -5,11 +5,10 @@ public with sharing class ExchangeRateController {
         'access_key' => apiKey
     };
 
-    @AuraEnabled(cacheable=false)
-    public static RatesResponse getExchangeRates(String base, List<String> symbols) {
+    @AuraEnabled(cacheable=true)
+    public static RatesResponse getExchangeRates(String base) {
         Map<String, String> urlParams = new Map<String, String>(baseUrlParams);
         urlParams.put('base', base);
-        urlParams.put('symbols', String.join(symbols, ','));
         AuraHandledException exc = new AuraHandledException('Can\'t retrieve exchange rates.');
 
         try {
@@ -66,7 +65,7 @@ public with sharing class ExchangeRateController {
     public class RatesResponse  {
         public Boolean success;
         @AuraEnabled
-        public Integer timestamp;
+        public Long timestamp;
         @AuraEnabled
         public Map<String, Decimal> rates;
     }
