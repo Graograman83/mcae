@@ -32,7 +32,10 @@
         onchange={handleHistoricalDateChange}
         type="date"
     ></lightning-input>
-    <template lwc:if={isTimeseriesMode}></template>
+    <template lwc:if={isTimeseriesMode}>
+        <c-timeseries
+        ></c-timeseries>
+    </template>
     <template lwc:else>
         <lightning-datatable
             key-field="symbol"
