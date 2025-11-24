@@ -7,7 +7,7 @@ private class ExchangeRateControllerTest {
         Test.setMock(HttpCalloutMock.class, new MockHttpResponseGenerator(body));
 
         try {
-            ExchangeRateController.RatesResponse response = ExchangeRateController.getExchangeRates('EUR', new List<String>{'AED', 'USD'});
+            ExchangeRateController.RatesResponse response = ExchangeRateController.getExchangeRates('EUR');
             System.assert(response.success);
             System.assertEquals(1763798647, response.timestamp);
             System.assertEquals(2, response.rates.size());
@@ -24,7 +24,7 @@ private class ExchangeRateControllerTest {
         Test.setMock(HttpCalloutMock.class, new MockHttpResponseGenerator(body));
 
         try {
-            ExchangeRateController.RatesResponse response = ExchangeRateController.getExchangeRates('EUR', new List<String>{'AED', 'USD'});
+            ExchangeRateController.RatesResponse response = ExchangeRateController.getExchangeRates('EUR');
         } catch (Exception e) {
             System.assert(true);
         }
