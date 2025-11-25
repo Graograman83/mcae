@@ -53,7 +53,16 @@ export default class ExchangeRates extends LightningElement {
         }
         return Object.entries(this.ratesData).filter(([key]) => this.quotes.includes(key)).map(([key, value]) => ({ id: key, currency: key + ' - ' + this.currencies[key], rate: value }));
     };
-    timeseriesData = {};
+    _timeseriesData = {};
+    get timeseriesData() {
+        if (this.quotes.length === 0 || !this.startDate || !this.endDate) {
+            return [];
+        }
+        return this._timeseriesData;
+    }
+    set timeseriesData(value) {
+        this._timeseriesData = value;
+    }
     timestamp;
 
     @wire(getLatestExchangeRates, { base: '$baseLatestParam' }) 
@@ -79,7 +88,8 @@ export default class ExchangeRates extends LightningElement {
     @wire(getTimeseriesExchangeRates, { base: '$baseTimeseriesParam', symbols: '$quotes', startDate: '$startDate', endDate: '$endDate'}) 
     wiredTimeseriesExchangeRates({ error, data }) {
         if (data) {
-            this.timeseriesData = data.rates;
+            this.timeseriesData = this.mapRatesToTimeseriesData(data.rates);
+            console.log('result', this.timeseriesData);
         } else if (error) {
             this.error = error;
         }
@@ -94,6 +104,23 @@ export default class ExchangeRates extends LightningElement {
         }
     }
 
+    mapRatesToTimeseriesData(rates) {
+        const timeseriesData = {
+            labels: [],
+            rows: {}
+        };
+        Object.entries(rates).forEach(([key, value]) => {
+            timeseriesData.labels.push(key);
+            Object.entries(value).forEach(([key, value]) => {
+                if (!timeseriesData.rows[key]) {
+                    timeseriesData.rows[key] = [];
+                }
+                timeseriesData.rows[key].push(value);
+            });
+        })
+        return timeseriesData;
+    }
+    
     handleBaseChange = this.handleChange('base');
     handleEndDateChange = this.handleChange('endDate');
     handleHistoricalDateChange = this.handleChange('historicalDate');
