@@ -94,27 +94,16 @@ export default class ExchangeRates extends LightningElement {
         }
     }
 
-    handleBaseChange(event) {
-        this.base = event.detail.value;
-    }
+    handleBaseChange = this.handleChange('base');
+    handleEndDateChange = this.handleChange('endDate');
+    handleHistoricalDateChange = this.handleChange('historicalDate');
+    handleModeChange = this.handleChange('mode');
+    handleQuoteChange = this.handleChange('quotes');
+    handleStartDateChange = this.handleChange('startDate');
 
-    handleEndDateChange(event) {
-        this.endDate = event.detail.value;
-    }
-
-    handleModeChange(event) {
-        this.mode = event.detail.value;
-    }
-
-    handleHistoricalDateChange(event) {
-        this.historicalDate = event.detail.value;
-    }
-
-    handleQuoteChange(event) {
-        this.quotes = event.detail.value;
-    }
-
-    handleStartDateChange(event) {
-        this.startDate = event.detail.value;
+    handleChange(propName) {
+        return function(event) {
+            this[propName] = event.detail.value;
+        }
     }
 }
