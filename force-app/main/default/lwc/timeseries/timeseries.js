@@ -50,6 +50,7 @@ export default class Timeseries extends LightningElement {
                 responsive: false
             }
         });
+        this.chart.resize();
     }
 
     getChartData() {
@@ -68,5 +69,17 @@ export default class Timeseries extends LightningElement {
     getTransparentColour(rgbString, alpha) {
         const [_, r, g, b] = rgbString.match(/rgb\((\d+),(\d+),(\d+)\)/i);
         return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+
+    connectedCallback() {
+        window.addEventListener("resize", this.handleWindowResize);
+    }
+
+    disconnectedCallback() {
+        window.removeEventListener("resize", this.handleWindowResize);
+    }
+
+    handleWindowResize = () => {
+        this.chart?.resize();
     }
 }
