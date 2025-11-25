@@ -9,11 +9,10 @@ public with sharing class ExchangeRateController {
     public static RatesResponse getHistoricalExchangeRates(String base, Date historicalDate) {
         Map<String, String> urlParams = new Map<String, String>(baseUrlParams);
         urlParams.put('base', base);
-        urlParams.put('date', ((Datetime) historicalDate).format('yyyy-MM-dd'));
         AuraHandledException exc = new AuraHandledException('Can\'t retrieve exchange rates.');
 
         try {
-            String responsebody = requestAndGetResponseBody('latest', urlParams);
+            String responsebody = requestAndGetResponseBody(((Datetime) historicalDate).format('yyyy-MM-dd'), urlParams);
             RatesResponse response = (RatesResponse) JSON.deserialize(responsebody, RatesResponse.class);
             if (response.success) {
                 return response;
@@ -34,6 +33,28 @@ public with sharing class ExchangeRateController {
         try {
             String responsebody = requestAndGetResponseBody('latest', urlParams);
             RatesResponse response = (RatesResponse) JSON.deserialize(responsebody, RatesResponse.class);
+            if (response.success) {
+                return response;
+            } else {
+                throw exc;
+            }
+        } catch (Exception e) {
+            throw exc;
+        }
+    }
+
+    @AuraEnabled(cacheable=true)
+    public static RatesSeriesResponse getTimeseriesExchangeRates(String base, List<String> symbols, Date startDate, Date endDate) {
+        Map<String, String> urlParams = new Map<String, String>(baseUrlParams);
+        urlParams.put('base', base);
+        urlParams.put('symbols', String.join(symbols, ','));
+        urlParams.put('start_date', ((Datetime) startDate).format('yyyy-MM-dd'));
+        urlParams.put('end_date', ((Datetime) endDate).format('yyyy-MM-dd'));
+        AuraHandledException exc = new AuraHandledException('Can\'t retrieve exchange rates.');
+
+        try {
+            String responsebody = requestAndGetResponseBody('timeseries', urlParams);
+            RatesSeriesResponse response = (RatesSeriesResponse) JSON.deserialize(responsebody, RatesSeriesResponse.class);
             if (response.success) {
                 return response;
             } else {
@@ -88,6 +109,12 @@ public with sharing class ExchangeRateController {
         public Long timestamp;
         @AuraEnabled
         public Map<String, Decimal> rates;
+    }
+
+    public class RatesSeriesResponse  {
+        public Boolean success;
+        @AuraEnabled
+        public Map<String, Map<String, Decimal>> rates;
     }
 
     public class SymbolsResponse  {
