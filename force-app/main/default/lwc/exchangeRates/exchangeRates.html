@@ -26,21 +26,33 @@
     ></lightning-radio-group>
     <lightning-input lwc:if={isHistoricalMode}
         label="Enter Date"
-        max = {maxDate}
-        min = {minDate}
+        max={maxDate}
+        min={minDate}
         value={historicalDate}
         onchange={handleHistoricalDateChange}
         type="date"
     ></lightning-input>
-    <template lwc:if={isTimeseriesMode}>
-        <c-timeseries
-        ></c-timeseries>
-    </template>
-    <template lwc:else>
-        <lightning-datatable
-            key-field="symbol"
-            data={rates}
-            columns={columns}
-        ></lightning-datatable>
-    </template>
+    <lightning-input lwc:if={isTimeseriesMode}
+        label="Enter Start Date"
+        max={maxDate}
+        min={minDate}
+        value={startDate}
+        onchange={handleStartDateChange}
+        type="date"
+    ></lightning-input>
+    <lightning-input lwc:if={isTimeseriesMode}
+        label="Enter End Date"
+        max={maxDate}
+        min={minDate}
+        value={endDate}
+        onchange={handleEndDateChange}
+        type="date"
+    ></lightning-input>
+    <c-timeseries lwc:if={isTimeseriesMode} data={timeseriesData}
+    ></c-timeseries>
+    <lightning-datatable lwc:else
+        key-field="symbol"
+        data={rates}
+        columns={columns}
+    ></lightning-datatable>
 </template>

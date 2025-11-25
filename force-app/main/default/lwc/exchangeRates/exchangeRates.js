@@ -1,6 +1,7 @@
 import { LightningElement, wire } from 'lwc';
 import getHistoricalExchangeRates from '@salesforce/apex/ExchangeRateController.getHistoricalExchangeRates';
 import getLatestExchangeRates from '@salesforce/apex/ExchangeRateController.getLatestExchangeRates';
+import getTimeseriesExchangeRates from '@salesforce/apex/ExchangeRateController.getTimeseriesExchangeRates';
 import getSymbols from '@salesforce/apex/ExchangeRateController.getSymbols';
 
 export default class ExchangeRates extends LightningElement {
@@ -11,6 +12,9 @@ export default class ExchangeRates extends LightningElement {
     get baseLatestParam() {
         return this.mode === 'latest' ? this.base : undefined;
     }
+    get baseTimeseriesParam() {
+        return this.mode === 'timeseries' && this.quotes.length > 0 ? this.base : undefined;
+    }
     columns = [
         { label: 'Currency', fieldName: 'currency', type: 'text' },
         { label: 'Rate', fieldName: 'rate', type: 'number' }
@@ -19,6 +23,7 @@ export default class ExchangeRates extends LightningElement {
     get currencyOptions() {
         return Object.entries(this.currencies).map(([key, value]) => ({ label: key + ' - ' + value, value: key }));
     };
+    endDate;
     error;
     historicalDate;
     get isHistoricalMode() {
@@ -40,6 +45,7 @@ export default class ExchangeRates extends LightningElement {
     ];
     mode = 'latest';
     quotes = [];
+    startDate;
     ratesData = {};
     get rates() {
         if (this.isHistoricalMode && !this.historicalDate) {
@@ -47,17 +53,16 @@ export default class ExchangeRates extends LightningElement {
         }
         return Object.entries(this.ratesData).filter(([key]) => this.quotes.includes(key)).map(([key, value]) => ({ id: key, currency: key + ' - ' + this.currencies[key], rate: value }));
     };
-    timestamp
+    timeseriesData = {};
+    timestamp;
 
     @wire(getLatestExchangeRates, { base: '$baseLatestParam' }) 
     wiredLatestExchangeRates({ error, data }) {
         if (data) {
             this.timestamp = new Date(data.timestamp);
             this.ratesData = data.rates;
-            console.log('getLatestExchangeRates', this.ratesData, this.timestamp)
         } else if (error) {
             this.error = error;
-            console.log('getLatestExchangeRates error', this.error)
         }
     }
 
@@ -66,10 +71,17 @@ export default class ExchangeRates extends LightningElement {
         if (data) {
             this.timestamp = new Date(data.timestamp);
             this.ratesData = data.rates;
-            console.log('getHistoricalExchangeRates', this.ratesData, this.timestamp)
         } else if (error) {
             this.error = error;
-            console.log('getHistoricalExchangeRates error', this.error)
+        }
+    }
+
+    @wire(getTimeseriesExchangeRates, { base: '$baseTimeseriesParam', symbols: '$quotes', startDate: '$startDate', endDate: '$endDate'}) 
+    wiredTimeseriesExchangeRates({ error, data }) {
+        if (data) {
+            this.timeseriesData = data.rates;
+        } else if (error) {
+            this.error = error;
         }
     }
 
@@ -86,10 +98,13 @@ export default class ExchangeRates extends LightningElement {
         this.base = event.detail.value;
     }
 
+    handleEndDateChange(event) {
+        this.endDate = event.detail.value;
+    }
+
     handleModeChange(event) {
         this.mode = event.detail.value;
     }
-
 
     handleHistoricalDateChange(event) {
         this.historicalDate = event.detail.value;
@@ -99,49 +114,7 @@ export default class ExchangeRates extends LightningElement {
         this.quotes = event.detail.value;
     }
 
-
-
-    /*chart;
-    renderedCallback() {
-        console.log('wtf');
-        console.log('initializeChart', this.template.querySelector('canvas'));
-
-        if (this.chart) {
-            return; // Chart already initialized
-        }
-        // Load the Chart.js library
-        loadScript(this, ChartJs)
-            .then(() => {
-                this.initializeChart();
-            })
-            .catch(error => {
-                console.error('Error loading Chart.js:', error);
-            });
+    handleStartDateChange(event) {
+        this.startDate = event.detail.value;
     }
-    initializeChart() {
-        const ctx = this.template.querySelector('canvas').getContext('2d');
-        this.chart = new Chart(ctx, {
-            type: 'bar', // Define chart type (bar, line, pie, etc.)
-            data: {
-                labels: ['January', 'February', 'March', 'April', 'May'],
-                datasets: [
-                    {
-                        label: 'Sales Data',
-                        data: [1000, 2000, 1500, 3000, 2500],
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        borderWidth: 1
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
-    }*/
 }
