@@ -7,7 +7,7 @@ import getSymbols from '@salesforce/apex/ExchangeRateController.getSymbols';
 import LightningToast from "lightning/toast";
 
 export default class ExchangeRates extends LightningElement {
-    base = 'EUR';
+    base;
     get baseHistoricalParam() {
         return this.mode === 'historical' ? this.base : undefined;
     }
@@ -86,14 +86,11 @@ export default class ExchangeRates extends LightningElement {
     wiredLatestExchangeRates(value) {
         this.wiredRates = value;
         const { error, data } = value;
-        console.log('lateststart');
         if (data) {
             this.timestamp = new Date(data.timestamp).toLocaleString();
             this.ratesData = data.rates;
             this.ratesError = undefined;
-            console.log('latesthappy');
-        } else if (error && !this.currenciesError) {
-            console.log('latesterror');
+        } else if (error) {
             this.showError(error);
             this.ratesError = error;
         }
@@ -107,7 +104,7 @@ export default class ExchangeRates extends LightningElement {
             this.timestamp = new Date(data.timestamp);
             this.ratesData = data.rates;
             this.ratesError = undefined;
-        } else if (error && !this.currenciesError) {
+        } else if (error) {
             this.showError(error);
             this.ratesError = error;
         }
@@ -120,7 +117,7 @@ export default class ExchangeRates extends LightningElement {
         if (data) {
             this.timeseriesData = this.mapRatesToTimeseriesData(data.rates);
             this.ratesError = undefined;
-        } else if (error && !this.currenciesError) {
+        } else if (error) {
             this.showError(error);
             this.ratesError = error;
         }
@@ -131,6 +128,7 @@ export default class ExchangeRates extends LightningElement {
         this.wiredCurrencies = value;
         const { error, data } = value;
         if (data) {
+            this.base = 'EUR';
             this.currencies = data.symbols;
             this.currenciesError = undefined;
         } else if (error) {
@@ -180,7 +178,6 @@ export default class ExchangeRates extends LightningElement {
     async handleCurrenciesRefresh() {
         try {
             await refreshApex(this.wiredCurrencies);
-            await refreshApex(this.wiredRates);
         } catch (error) {
             this.showError(error);
         }
