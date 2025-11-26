@@ -26,8 +26,14 @@ export default class ExchangeRates extends LightningElement {
     endDate;
     error;
     historicalDate;
+    get isTimeseriesHidden() {
+        return !this.isTimeseriesMode ? 'slds-hidden' : '';
+    }
     get isHistoricalMode() {
         return this.mode === 'historical';
+    }
+    get isLatestMode() {
+        return this.mode === 'latest';
     }
     get isTimeseriesMode() {
         return this.mode === 'timeseries';
@@ -53,6 +59,9 @@ export default class ExchangeRates extends LightningElement {
         }
         return Object.entries(this.ratesData).filter(([key]) => this.quotes.includes(key)).map(([key, value]) => ({ id: key, currency: key + ' - ' + this.currencies[key], rate: value }));
     };
+    get reloadHidden() {
+        return this.isLatestMode && this.rates.length > 0 ? '' : 'slds-hidden';
+    }
     _timeseriesData = {};
     get timeseriesData() {
         if (this.quotes.length === 0 || !this.startDate || !this.endDate) {
@@ -68,7 +77,7 @@ export default class ExchangeRates extends LightningElement {
     @wire(getLatestExchangeRates, { base: '$baseLatestParam' }) 
     wiredLatestExchangeRates({ error, data }) {
         if (data) {
-            this.timestamp = new Date(data.timestamp);
+            this.timestamp = new Date(data.timestamp).toLocaleString();
             this.ratesData = data.rates;
         } else if (error) {
             this.error = error;
