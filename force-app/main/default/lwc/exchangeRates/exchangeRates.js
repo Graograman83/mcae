@@ -1,4 +1,5 @@
 import { LightningElement, wire } from 'lwc';
+import { refreshApex } from '@salesforce/apex';
 import getHistoricalExchangeRates from '@salesforce/apex/ExchangeRateController.getHistoricalExchangeRates';
 import getLatestExchangeRates from '@salesforce/apex/ExchangeRateController.getLatestExchangeRates';
 import getTimeseriesExchangeRates from '@salesforce/apex/ExchangeRateController.getTimeseriesExchangeRates';
@@ -73,12 +74,16 @@ export default class ExchangeRates extends LightningElement {
         this._timeseriesData = value;
     }
     timestamp;
+    wiredLatestRates;
 
     @wire(getLatestExchangeRates, { base: '$baseLatestParam' }) 
-    wiredLatestExchangeRates({ error, data }) {
+    wiredLatestExchangeRates(value) {
+        this.wiredLatestRates = value;
+        const { error, data } = value;
         if (data) {
             this.timestamp = new Date(data.timestamp).toLocaleString();
             this.ratesData = data.rates;
+            this.error = undefined;
         } else if (error) {
             this.error = error;
         }
@@ -89,6 +94,7 @@ export default class ExchangeRates extends LightningElement {
         if (data) {
             this.timestamp = new Date(data.timestamp);
             this.ratesData = data.rates;
+            this.error = undefined;
         } else if (error) {
             this.error = error;
         }
@@ -98,7 +104,7 @@ export default class ExchangeRates extends LightningElement {
     wiredTimeseriesExchangeRates({ error, data }) {
         if (data) {
             this.timeseriesData = this.mapRatesToTimeseriesData(data.rates);
-            console.log('result', this.timeseriesData);
+            this.error = undefined;
         } else if (error) {
             this.error = error;
         }
@@ -108,6 +114,7 @@ export default class ExchangeRates extends LightningElement {
     wiredSymbols({ error, data }) {
         if (data) {
             this.currencies = data.symbols;
+            this.error = undefined;
         } else if (error) {
             this.error = error;
         }
@@ -141,5 +148,9 @@ export default class ExchangeRates extends LightningElement {
         return function(event) {
             this[propName] = event.detail.value;
         }
+    }
+
+    handleRefresh() {
+        refreshApex(this.wiredLatestRates);
     }
 }
