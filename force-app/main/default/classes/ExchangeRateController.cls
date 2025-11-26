@@ -68,7 +68,7 @@ public with sharing class ExchangeRateController {
     @AuraEnabled(cacheable=true)
     public static SymbolsResponse getSymbols() {
         Map<String, String> urlParams = new Map<String, String>(baseUrlParams);
-        AuraHandledException exc = new AuraHandledException('Can\'t retrieve symbols.');
+        AuraHandledException exc = new AuraHandledException('Can\'t retrieve currencies.');
 
         try {
             String responsebody = requestAndGetResponseBody('symbols', urlParams);
@@ -85,23 +85,13 @@ public with sharing class ExchangeRateController {
 
     private static String requestAndGetResponseBody(String resource, Map<String, String> urlParams) {
         HttpRequest req = new HttpRequest();
-        req.setEndpoint(endpoint + resource + buildQueryString(urlParams));
+        req.setEndpoint(endpoint + resource + Utils.buildQueryString(urlParams));
         req.setMethod('GET');
         
         Http http = new Http();
         HttpResponse res = http.send(req);
         return res.getBody();
     }
-
-    private static String buildQueryString(Map<String, String> urlParams) {
-        String queryString = '?';
-        List<String> expressions = new List<String>();
-        for (String key : urlParams.keySet()) {
-            expressions.add(key + '=' + urlParams.get(key));
-        }
-        queryString += String.join(expressions, '&');
-        return queryString;
-    }    
 
     public class RatesResponse  {
         public Boolean success;
