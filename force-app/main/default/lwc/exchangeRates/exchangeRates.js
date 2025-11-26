@@ -62,7 +62,7 @@ export default class ExchangeRates extends LightningElement {
         }
         return Object.entries(this.ratesData).filter(([key]) => this.quotes.includes(key)).map(([key, value]) => ({ id: key, currency: key + ' - ' + this.currencies[key], rate: value }));
     };
-    get reloadHidden() {
+    get refreshRatesHidden() {
         return ( this.ratesError || (this.isLatestMode && this.rates.length > 0)) ? '' : 'slds-hidden';
     }
     get timestampHidden() {
@@ -92,7 +92,7 @@ export default class ExchangeRates extends LightningElement {
             this.ratesData = data.rates;
             this.ratesError = undefined;
             console.log('latesthappy');
-        } else if (error) {
+        } else if (error && !this.currenciesError) {
             console.log('latesterror');
             this.showError(error);
             this.ratesError = error;
@@ -107,7 +107,7 @@ export default class ExchangeRates extends LightningElement {
             this.timestamp = new Date(data.timestamp);
             this.ratesData = data.rates;
             this.ratesError = undefined;
-        } else if (error) {
+        } else if (error && !this.currenciesError) {
             this.showError(error);
             this.ratesError = error;
         }
@@ -120,7 +120,7 @@ export default class ExchangeRates extends LightningElement {
         if (data) {
             this.timeseriesData = this.mapRatesToTimeseriesData(data.rates);
             this.ratesError = undefined;
-        } else if (error) {
+        } else if (error && !this.currenciesError) {
             this.showError(error);
             this.ratesError = error;
         }
@@ -132,10 +132,10 @@ export default class ExchangeRates extends LightningElement {
         const { error, data } = value;
         if (data) {
             this.currencies = data.symbols;
-            this.curriencesError = undefined;
+            this.currenciesError = undefined;
         } else if (error) {
             this.showError(error);
-            this.curriencesError = error;
+            this.currenciesError = error;
         }
     }
 
@@ -169,8 +169,17 @@ export default class ExchangeRates extends LightningElement {
         }
     }
 
-    async handleRefresh() {
+    async handleRatesRefresh() {
         try {
+            await refreshApex(this.wiredRates);
+        } catch (error) {
+            this.showError(error);
+        }
+    }
+
+    async handleCurrenciesRefresh() {
+        try {
+            await refreshApex(this.wiredCurrencies);
             await refreshApex(this.wiredRates);
         } catch (error) {
             this.showError(error);
@@ -180,8 +189,8 @@ export default class ExchangeRates extends LightningElement {
     showError(error) {
         LightningToast.show(
             {
-                label: "Bla bla",
-                message: error.body.message,
+                label: error.body.message,
+                message: "Press refresh button to try again",
                 mode: "sticky",
                 variant: "error",
             }, this

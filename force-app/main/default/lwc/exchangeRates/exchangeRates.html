@@ -1,6 +1,14 @@
 <template>
     <div class="slds-p-around_medium">
         <lightning-card>
+            <div class="slds-p-around_medium" lwc:if={currenciesError}>
+                <lightning-button
+                    label="Refresh"
+                    icon-name="utility:refresh"
+                    onclick={handleCurrenciesRefresh}
+                    variant="destructive"
+                ></lightning-button>
+            </div>
             <div class="slds-p-around_medium">
                 <lightning-combobox
                 label="Base currency"
@@ -67,18 +75,16 @@
         ></c-timeseries>
         <lightning-card title="Table of rates" lwc:else>
             <div class="slds-p-around_medium">
-                <div class={reloadHidden}>
-                    <div class="slds-clearfix">
-                        <div class={reloadHidden}>
-                            <lightning-button 
-                                label="Refresh"
-                                icon-name="utility:refresh"
-                                onclick={handleRefresh}
-                            ></lightning-button>
-                        </div> 
-                        <div class="slds-float_right">
-                            <div class={timestampHidden}>Latest rates updated: {timestamp}</div>
-                        </div>
+                <div class="slds-clearfix">
+                    <div class={refreshRatesHidden}>
+                        <lightning-button 
+                            label="Refresh"
+                            icon-name="utility:refresh"
+                            onclick={handleRatesRefresh}
+                        ></lightning-button>
+                    </div> 
+                    <div class="slds-float_right">
+                        <div class={timestampHidden}>Latest rates updated: {timestamp}</div>
                     </div>
                 </div>
                 <div class="slds-p-top_medium">
