@@ -68,12 +68,18 @@
         <lightning-card title="Table of rates" lwc:else>
             <div class="slds-p-around_medium">
                 <div class={reloadHidden}>
-                    <div class="slds-clearfix"><lightning-button 
-                        label="Refresh"
-                        icon-name="utility:refresh"
-                        onclick={handleRefresh}
-                    ></lightning-button>
-                    <div class="slds-float_right">Latest rates updated: {timestamp}</div></div>
+                    <div class="slds-clearfix">
+                        <div class={reloadHidden}>
+                            <lightning-button 
+                                label="Refresh"
+                                icon-name="utility:refresh"
+                                onclick={handleRefresh}
+                            ></lightning-button>
+                        </div> 
+                        <div class="slds-float_right">
+                            <div class={timestampHidden}>Latest rates updated: {timestamp}</div>
+                        </div>
+                    </div>
                 </div>
                 <div class="slds-p-top_medium">
                     <lightning-datatable

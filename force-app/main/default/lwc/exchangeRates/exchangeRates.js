@@ -4,6 +4,7 @@ import getHistoricalExchangeRates from '@salesforce/apex/ExchangeRateController.
 import getLatestExchangeRates from '@salesforce/apex/ExchangeRateController.getLatestExchangeRates';
 import getTimeseriesExchangeRates from '@salesforce/apex/ExchangeRateController.getTimeseriesExchangeRates';
 import getSymbols from '@salesforce/apex/ExchangeRateController.getSymbols';
+import LightningToast from "lightning/toast";
 
 export default class ExchangeRates extends LightningElement {
     base = 'EUR';
@@ -25,7 +26,8 @@ export default class ExchangeRates extends LightningElement {
         return Object.entries(this.currencies).map(([key, value]) => ({ label: key + ' - ' + value, value: key }));
     };
     endDate;
-    error;
+    currenciesError;
+    ratesError;
     historicalDate;
     get isTimeseriesHidden() {
         return !this.isTimeseriesMode ? 'slds-hidden' : '';
@@ -61,6 +63,9 @@ export default class ExchangeRates extends LightningElement {
         return Object.entries(this.ratesData).filter(([key]) => this.quotes.includes(key)).map(([key, value]) => ({ id: key, currency: key + ' - ' + this.currencies[key], rate: value }));
     };
     get reloadHidden() {
+        return ( this.ratesError || (this.isLatestMode && this.rates.length > 0)) ? '' : 'slds-hidden';
+    }
+    get timestampHidden() {
         return this.isLatestMode && this.rates.length > 0 ? '' : 'slds-hidden';
     }
     _timeseriesData = {};
@@ -74,49 +79,63 @@ export default class ExchangeRates extends LightningElement {
         this._timeseriesData = value;
     }
     timestamp;
-    wiredLatestRates;
+    wiredCurrencies;
+    wiredRates;
 
     @wire(getLatestExchangeRates, { base: '$baseLatestParam' }) 
     wiredLatestExchangeRates(value) {
-        this.wiredLatestRates = value;
+        this.wiredRates = value;
         const { error, data } = value;
+        console.log('lateststart');
         if (data) {
             this.timestamp = new Date(data.timestamp).toLocaleString();
             this.ratesData = data.rates;
-            this.error = undefined;
+            this.ratesError = undefined;
+            console.log('latesthappy');
         } else if (error) {
-            this.error = error;
+            console.log('latesterror');
+            this.showError(error);
+            this.ratesError = error;
         }
     }
 
     @wire(getHistoricalExchangeRates, { base: '$baseHistoricalParam', historicalDate: '$historicalDate' }) 
-    wiredHistoricalExchangeRates({ error, data }) {
+    wiredHistoricalExchangeRates(value) {
+        this.wiredRates = value;
+        const { error, data } = value;
         if (data) {
             this.timestamp = new Date(data.timestamp);
             this.ratesData = data.rates;
-            this.error = undefined;
+            this.ratesError = undefined;
         } else if (error) {
-            this.error = error;
+            this.showError(error);
+            this.ratesError = error;
         }
     }
 
     @wire(getTimeseriesExchangeRates, { base: '$baseTimeseriesParam', symbols: '$quotes', startDate: '$startDate', endDate: '$endDate'}) 
-    wiredTimeseriesExchangeRates({ error, data }) {
+    wiredTimeseriesExchangeRates(value) {
+        this.wiredRates = value;
+        const { error, data } = value;
         if (data) {
             this.timeseriesData = this.mapRatesToTimeseriesData(data.rates);
-            this.error = undefined;
+            this.ratesError = undefined;
         } else if (error) {
-            this.error = error;
+            this.showError(error);
+            this.ratesError = error;
         }
     }
 
     @wire(getSymbols) 
-    wiredSymbols({ error, data }) {
+    wiredSymbols(value) {
+        this.wiredCurrencies = value;
+        const { error, data } = value;
         if (data) {
             this.currencies = data.symbols;
-            this.error = undefined;
+            this.curriencesError = undefined;
         } else if (error) {
-            this.error = error;
+            this.showError(error);
+            this.curriencesError = error;
         }
     }
 
@@ -150,7 +169,22 @@ export default class ExchangeRates extends LightningElement {
         }
     }
 
-    handleRefresh() {
-        refreshApex(this.wiredLatestRates);
+    async handleRefresh() {
+        try {
+            await refreshApex(this.wiredRates);
+        } catch (error) {
+            this.showError(error);
+        }
+    }
+
+    showError(error) {
+        LightningToast.show(
+            {
+                label: "Bla bla",
+                message: error.body.message,
+                mode: "sticky",
+                variant: "error",
+            }, this
+        );
     }
 }
