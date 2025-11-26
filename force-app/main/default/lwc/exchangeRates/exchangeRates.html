@@ -73,16 +73,14 @@
     <div class="slds-p-around_medium">
         <c-timeseries lwc:if={isTimeseriesMode} data={timeseriesData}
         ></c-timeseries>
-        <lightning-card title="Table of rates" lwc:else>
+        <lightning-card title="Exchange rates" lwc:else>
             <div class="slds-p-around_medium">
                 <div class="slds-clearfix">
-                    <div class={refreshRatesHidden}>
-                        <lightning-button 
-                            label="Refresh"
-                            icon-name="utility:refresh"
-                            onclick={handleRatesRefresh}
-                        ></lightning-button>
-                    </div> 
+                    <lightning-button class={refreshRatesHidden}
+                        label="Refresh"
+                        icon-name="utility:refresh"
+                        onclick={handleRatesRefresh}
+                    ></lightning-button>
                     <div class="slds-float_right">
                         <div class={timestampHidden}>Latest rates updated: {timestamp}</div>
                     </div>
